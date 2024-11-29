@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-4k+db82)ioe$@f8z^4l5)cd7t^p1+m@a^24t8ovt(j18@$7sc9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.facematching'
+    'apps.facematching',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'fyp_backend.urls'
@@ -111,6 +114,21 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8080',
+    'https://localhost:8080',  # In case you're using HTTPS on localhost
+    'https://*.yousuf.xyz'
+]
 
 
 # Static files (CSS, JavaScript, Images)
