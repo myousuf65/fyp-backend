@@ -2,6 +2,8 @@ from deepface import DeepFace
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from django.core.files.storage import default_storage
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 
 def matchFace(request):
     if request.method == "POST":
@@ -21,6 +23,7 @@ def matchFace(request):
         return JsonResponse({"error": "Invalid HTTP method"}, status=405)
 
 
+@ensure_csrf_cookie
 def showHtml(request):
     return render(request, 'test.html')
 
