@@ -54,7 +54,7 @@ function takephoto() {
       formData.append('image', blob, 'photo.jpeg'); 
 
       const csrfToken = getCookie('csrftoken'); 
-      fetch('http://localhost:8000/match/test/', {
+      fetch(`${window.location.origin}/match/test/`, {
         method: 'POST',
         body: formData,
         headers: {
