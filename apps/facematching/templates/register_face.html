@@ -5,11 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-    {%load static %}
-    <script defer src="{% static 'face-api.min.js'%}"></script>
-    {%load static%}
-    <script defer src="{% static 'script.js'%}"></script>
+  <title>Student Registration</title>
+  {% load static %}
+  <script defer src="{% static 'face-api.min.js' %}"></script>
+  {% load static %}
+  <script defer src="{% static 'register.js' %}"></script>
   <style>
     * {
       margin: 0;
@@ -26,7 +26,6 @@
       justify-content: center;
       align-items: center;
     }
-
 
     canvas {
       position: absolute;
@@ -75,24 +74,82 @@
       background-color: #FF8F00;
       border-color: #FF8F00;
     }
+
+    .input-container {
+      margin: 10px 0;
+      width: 100%;
+      max-width: 350px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-container label {
+      color: white;
+      font-size: 18px;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    .input-container input {
+      padding: 12px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-top: 5px;
+    }
+
+    .video-container {
+      margin-top: 20px;
+    }
+
+    .top-container {
+      width: 60%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header {
+      width: 100%;
+      background-color: orange;
+      text-align: center;
+    }
   </style>
 </head>
 
 <body>
 
-  <h1>Face Detection in Action</h1>
+  <div class="header">
+    <h1>Student Registration</h1>
+  </div>
+  <div class="top-container">
+    <!-- Input fields for student name and student ID -->
+    <div class="input-container">
+      <label for="student-name">Student Name:</label>
+      <input type="text" id="student-name" placeholder="Enter student name" required>
+    </div>
+
+    <div class="input-container">
+      <label for="student-id">Student ID:</label>
+      <input type="text" id="student-id" placeholder="Enter student ID" required>
+    </div>
+  </div>
   <!-- Video container -->
   <div class="video-container">
     <video id="video" width="720" height="560" autoplay muted></video>
   </div>
-  <button id="attend-button">Take attendance </button>
 
+  <button id="attend-button">Register</button>
 
   <div>
-    <canvas width="720" height="560" id='show-img' style="display: none;">
-    </canvas>
+    <canvas width="720" height="560" id='show-img' style="display: none;"></canvas>
   </div>
 
+  <script>
+
+  </script>
 </body>
 
 </html>
