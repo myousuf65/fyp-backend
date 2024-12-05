@@ -1,98 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-    {%load static %}
-    <script defer src="{% static 'face-api.min.js'%}"></script>
-    {%load static%}
-    <script defer src="{% static 'compare.js'%}"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Detection in Action</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #ff7e5f, #feb47b);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
+        html, body {
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
 
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            align-items: center; 
+        }
 
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      border-radius: 8px;
-      z-index: 2;
-    }
+        header {
+            background: #0078D7;
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+        }
 
-    video {
-      border-radius: 30px;
-      box-shadow: 2px 2px 2px 1px rgb(0 0 0 / 20%);
-      background: #000;
-      position: relative;
-      z-index: 1;
-    }
+        header h1 {
+            font-size: 2rem;
+        }
 
-    .video-container {
-      position: relative;
-      overflow: hidden;
-      border-radius: 30px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1; 
+            text-align: center;
+            width: 100%;
+        }
 
-    h1 {
-      color: white;
-      font-size: 40px;
-      margin: 20px;
-    }
+        .video-container {
+            margin: 20px auto;
+            width: 500px; 
+            height: 500px; 
+            background: #000;
+            border: 4px solid #0078D7;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1rem;
+        }
 
-    #attend-button {
-      padding: 10px 20px;
-      background-color: #FF6F00;
-      color: white;
-      border: 2px solid #FF6F00;
-      border-radius: 5px;
-      font-size: 25px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 20px;
-    }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+        }
 
-    #attend-button:hover {
-      background-color: #FF8F00;
-      border-color: #FF8F00;
-    }
-  </style>
+        .btn {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            background: #0078D7;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #28a745; 
+        }
+
+        .btn:active {
+            background: #28a745; 
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745; 
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
 </head>
-
 <body>
+    <header>
+        <h1>Face Detection in Action</h1>
+    </header>
 
-  <h1>Face Detection in Action</h1>
-  <!-- Video container -->
-  <div class="video-container">
-    <video id="video" width="720" height="560" autoplay muted></video>
-  </div>
-  <button id="attend-button">Take attendance </button>
+    <main>
+        <p>Welcome to the face detection system. Below is the live video feed for face detection. Click the button to take attendance.</p>
+        
+        <div class="video-container" id="video-container">
+            <p>Live video feed will appear here.</p>
+        </div>
 
+        <a href="#" class="btn" id="attendance-btn">Take Attendance</a>
+        <div id="message-container"></div>
+    </main>
 
-  <div>
-    <canvas width="720" height="560" id='show-img' style="display: none;">
-    </canvas>
-  </div>
-
+    <footer>
+        <p>&copy; 2024 Face Detection System. All rights reserved.</p>
+    </footer>
 </body>
-
 </html>
