@@ -1,6 +1,4 @@
 env/
 static/temp_storage
 .env
-apps/facematching/__pycache__/
-__pycache__/
 
