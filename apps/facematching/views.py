@@ -8,6 +8,9 @@ from deepface import DeepFace
 import os 
 from dotenv import load_dotenv 
 import b2sdk.v2 as b2  
+from .models import Student
+from django.http import JsonResponse
+
 
 info = b2.InMemoryAccountInfo()
 load_dotenv()
@@ -47,6 +50,13 @@ def registerFace(request):
     if request.method == "POST":
         image_data = request.FILES.get("image")
         student_id = request.POST.get("student-id")
+        
+        # check if student_id already exists
+        if Student.objects.filter(student_id = student_id).exists():
+            return JsonResponse({
+                "message" : "this student already exists"
+            }, status=400)
+
         student_name = request.POST.get("student-name")
         print(student_id, student_name)
         if image_data :
@@ -58,7 +68,12 @@ def registerFace(request):
             file_name = student_id+".jpeg"
             uploaded_file = bucket.upload_local_file(local_file=file_path, file_name=file_name)
             download_url = b2_api.get_download_url_for_fileid(uploaded_file.id_)
-            response = HttpResponse();
-            response.write(download_url)
-            return response
+            student = Student(student_id=student_id, student_name=student_name, photo_path=download_url )
+            student.save()
+            # feed user data into a model and save to db
+            return JsonResponse({
+                "student_id" : student.student_id,
+                "student_name" : student.student_name,
+                "photo_path" : student.photo_path
+            },status=200)
 

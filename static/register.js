@@ -4,8 +4,13 @@ const videocontainer = document.querySelector('.video-container')
 const attendButton = document.querySelector('#attend-button')
 const studentName = document.getElementById("student-name")
 const studentID = document.getElementById("student-id")
-
-
+const errorContainer = document.getElementById("error-message")
+const showModalButton = document.getElementById('show-modal');
+const closeModalButton = document.getElementById('close-modal');
+const modal = document.getElementById('modal');
+const body = document.body;
+const mainContent = document.getElementById("main-content")
+const modaltext = document.querySelector(".response-modal-text")
 
 const displaySize = { width: video.width, height: video.height }
 
@@ -35,9 +40,9 @@ function startVideo() {
 
 function takephoto() {
   const ctx = imgcanvas.getContext('2d');
-  imgcanvas.width = displaySize.width;  
-  imgcanvas.height = displaySize.height;  
-  
+  imgcanvas.width = displaySize.width;
+  imgcanvas.height = displaySize.height;
+
   /*
   -------------NOTE TO MYSELF-----------:
   1. u have to draw the img on a hidden canvas 
@@ -55,21 +60,36 @@ function takephoto() {
   imgcanvas.toBlob((blob) => {
     if (blob instanceof Blob) {
       console.log("Blob created");
-      formData.append('image', blob, 'photo.jpeg'); 
+      formData.append('image', blob, 'photo.jpeg');
       formData.append("student-id", studentID.value);
       formData.append("student-name", studentName.value);
 
-      const csrfToken = getCookie('csrftoken'); 
+      const csrfToken = getCookie('csrftoken');
+      showModal("Loading", 0)
       fetch(`${window.location.origin}/match/registerface/`, {
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRFToken': csrfToken, 
+          'X-CSRFToken': csrfToken,
         },
       })
-        .then(response => response.json())
+        .then(response => {
+
+          if (response.status === 400) {
+            showModal("Error : Student already exists", 400)
+            throw new Error('Student exists');
+          }
+          else if (response.status === 500) {
+            showModal("Server Error", 500)
+            throw new Error('Server error');
+          }
+          return response.json()
+        })
         .then(data => {
-          console.log('Image uploaded successfully:', data);
+          if(data.photo_path.includes("backblazeb2.com")){
+            showModal("Student Registered Successfully", 200)
+          }
+          
         })
         .catch(error => {
           console.log('Error uploading image:', error);
@@ -77,7 +97,7 @@ function takephoto() {
     } else {
       console.log("Blob not created.");
     }
-  }, "image/jpeg", 0.95); 
+  }, "image/jpeg", 0.95);
 }
 
 
@@ -91,6 +111,7 @@ function getCookie(name) {
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
 }
+
 
 
 video.addEventListener('playing', () => {
@@ -113,3 +134,36 @@ video.addEventListener('playing', () => {
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
   }, 50)
 })
+
+
+const showModal = (content, status) => {
+  modal.style.display = 'block';
+  if (status === 400 || status === 500) {
+    modal.className = "error-response-modal";
+    modaltext.innerText = "";
+    modaltext.innerText = content;
+    closeModalButton.style.display = "inline-block";
+  }
+  else if (status === 200) {
+    modal.className = "success-response-modal";  
+    modaltext.innerText = "";
+    modaltext.innerText = content;
+    closeModalButton.style.display = "inline-block";
+  }
+  else if (status === 0) {
+    modaltext.innerText = "";
+    modal.className = "loader";  
+    closeModalButton.style.display = "none";
+  }
+
+  // Add the modal text
+  mainContent.style.filter = 'blur(5px)';
+};
+
+// Function to hide the modal
+const closeModal = () => {
+  modal.style.display = 'none';
+  mainContent.style.filter = 'none';
+};
+closeModalButton.addEventListener('click', closeModal);
+
