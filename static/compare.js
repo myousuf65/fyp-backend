@@ -2,6 +2,14 @@ const video = document.getElementById('video')
 const imgcanvas = document.getElementById('show-img')
 const videocontainer = document.querySelector('.video-container')
 const attendButton = document.querySelector('#attend-button')
+const errorContainer = document.getElementById("error-message")
+const showModalButton = document.getElementById('show-modal');
+const closeModalButton = document.getElementById('close-modal');
+const modal = document.getElementById('modal');
+const body = document.body;
+const mainContent = document.getElementById("main-content")
+const modaltext = document.querySelector(".response-modal-text")
+
 
 const displaySize = { width: video.width, height: video.height }
 
@@ -54,7 +62,8 @@ function takephoto() {
       formData.append('image', blob, 'photo.jpeg'); 
 
       const csrfToken = getCookie('csrftoken'); 
-      fetch(`${window.location.origin}/match/test/`, {
+      showModal("Loading", 0)
+      fetch(`${window.location.origin}/match/compareface/`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -63,10 +72,20 @@ function takephoto() {
       })
         .then(response => response.json())
         .then(data => {
-          console.log('Image uploaded successfully:', data);
+          console.log('Face Matching Result :', data);
+
+          if(data["message"] === "True"){
+            showModal(`Face Matched with ${data.matched_person_name}`, 200)
+          }
+
+          if(data["error"] === "Your Face did not match with anyone"){
+            showModal("Your Face did not match with anyone", 500)
+          }
+
         })
         .catch(error => {
           console.log('Error uploading image:', error);
+          showModal("Server error, please try again", 500)
         });
     } else {
       console.log("Blob not created.");
@@ -79,6 +98,39 @@ function takephoto() {
   django will automatically generate a csrf token and send to client
   it expects the token to be explictly defined in each request
 */
+
+
+const showModal = (content, status) => {
+  modal.style.display = 'block';
+  if (status === 400 || status === 500) {
+    modal.className = "error-response-modal";
+    modaltext.innerText = "";
+    modaltext.innerText = content;
+    closeModalButton.style.display = "inline-block";
+  }
+  else if (status === 200) {
+    modal.className = "success-response-modal";  
+    modaltext.innerText = "";
+    modaltext.innerText = content;
+    closeModalButton.style.display = "inline-block";
+  }
+  else if (status === 0) {
+    modaltext.innerText = "";
+    modal.className = "loader";  
+    closeModalButton.style.display = "none";
+  }
+
+  // Add the modal text
+  mainContent.style.filter = 'blur(5px)';
+};
+
+// Function to hide the modal
+const closeModal = () => {
+  modal.style.display = 'none';
+  mainContent.style.filter = 'none';
+};
+closeModalButton.addEventListener('click', closeModal);
+
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;

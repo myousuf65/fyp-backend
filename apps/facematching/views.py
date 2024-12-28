@@ -19,6 +19,9 @@ b2_api = b2.B2Api(info)
 application_key_id = os.getenv("B2_KEY_ID")
 application_key = os.getenv("B2_APPLICATION_KEY")
 
+# @ensure_csrf_cookie
+# def test(request):
+
 
 @ensure_csrf_cookie
 def compareFace(request):
@@ -28,13 +31,23 @@ def compareFace(request):
         image_data = request.FILES.get("image")
         if image_data:
             file_path = default_storage.save("static/temp_storage/comparable_photo.jpeg", image_data)
-            res = DeepFace.verify(file_path, 'static/dataset/imran_khan.png')
-            print(f"File saved at: {file_path}")
-            print(res)
-
-            # Return a response indicating success
-            return JsonResponse({"message": res})
-
+            print("the file path is ",  file_path)
+            all_student = Student.objects.all();
+            for s in all_student:
+                result = DeepFace.verify(file_path, s.photo_path)
+                if(result['verified'] == True):
+                    print("this matched with", s.student_name)
+                    return JsonResponse({
+                        "message" : "True",
+                        "matched_person_name" : s.student_name,
+                        "matched_person_id" : s.student_id,
+                    })
+                else:
+                    print("This one failed")
+            # face did not match anyone
+            return JsonResponse({
+                "error" : "Your Face did not match with anyone"
+            })
         else:
             return JsonResponse({"error": "No image found in the request"}, status=400)
     else:

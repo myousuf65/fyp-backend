@@ -75,23 +75,99 @@
       background-color: #FF8F00;
       border-color: #FF8F00;
     }
+        #main-content {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+
+    .error-response-modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* Center the modal */
+      width: 400px;
+      background-color: rgba(255, 0, 0, 0.8); /* Semi-transparent red background */
+      color: white; /* White text for better readability */
+      z-index: 1000; /* Ensure it appears above other elements */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
+      font-weight: bold; /* Bold text to grab attention */
+    }
+
+    .success-response-modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* Center the modal */
+      width: 400px;
+      background-color: rgba(0, 128, 0, 0.8); /* Semi-transparent green background */
+      color: white; /* White text for better readability */
+      z-index: 1000; /* Ensure it appears above other elements */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
+      font-weight: bold; /* Bold text to grab attention */
+    }
+
+
+    .loader {
+      position: fixed;
+      width: fit-content;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 30px;
+      clip-path: inset(0 3ch 0 0);
+      animation: l4 1s steps(4) infinite;
+    } 
+    .loader:before {
+      content:"Loading..."
+    }
+    @keyframes l4 {to{clip-path: inset(0 -1ch 0 0)}}
+    #close-modal{
+      padding: 10px;
+      border: 0;
+      border-radius: 10px;
+      cursor : pointer;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <h1>Face Detection in Action</h1>
-  <!-- Video container -->
-  <div class="video-container">
-    <video id="video" width="720" height="560" autoplay muted></video>
-  </div>
-  <button id="attend-button">Take attendance </button>
+  <div id="main-content">
+    <h1>Face Detection in Action</h1>
+    <!-- Video container -->
+    <div class="video-container">
+      <video id="video" width="720" height="560" autoplay muted></video>
+    </div>
+    <button id="attend-button">Take attendance </button>
 
 
-  <div>
-    <canvas width="720" height="560" id='show-img' style="display: none;">
-    </canvas>
+    <div>
+      <canvas width="720" height="560" id='show-img' style="display: none;">
+      </canvas>
+    </div>
   </div>
+
+  <div id="modal"  style="display: none;">
+    <div style="color:white; padding: 20px; text-align: center;">
+      <p class="response-modal-text"></p>
+      <button id="close-modal" onclick="closeModal()" style="margin-top: 20px;">Close</button>
+    </div>
+  </div>
+
 
 </body>
 
