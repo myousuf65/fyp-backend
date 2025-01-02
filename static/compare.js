@@ -9,7 +9,8 @@ const modal = document.getElementById('modal');
 const body = document.body;
 const mainContent = document.getElementById("main-content")
 const modaltext = document.querySelector(".response-modal-text")
-
+const success_sound = document.getElementById("success-sound");
+const failed_sound = document.getElementById("error-sound");
 
 const displaySize = { width: video.width, height: video.height }
 
@@ -103,12 +104,14 @@ function takephoto() {
 const showModal = (content, status) => {
   modal.style.display = 'block';
   if (status === 400 || status === 500) {
+    failed_sound.play();
     modal.className = "error-response-modal";
     modaltext.innerText = "";
     modaltext.innerText = content;
     closeModalButton.style.display = "inline-block";
   }
   else if (status === 200) {
+    success_sound.play();
     modal.className = "success-response-modal";  
     modaltext.innerText = "";
     modaltext.innerText = content;

@@ -217,6 +217,12 @@
           <button id="close-modal" onclick="closeModal()" style="margin-top: 20px;">Close</button>
         </div>
       </div>
+
+      {% load static %}
+      <audio id="success-sound" src="{% static "audio/registration_success.mp3" %}"></audio>
+      {% load static %}
+      <audio id="error-sound" src="{% static "audio/registration_failed.mp3" %}"></audio>
+
     </body>
 
   </body>
