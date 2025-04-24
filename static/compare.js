@@ -20,7 +20,6 @@ attendButton.addEventListener('click', (e) => {
 	takephoto();
 })
 
-
 Promise.all([
 	faceapi.nets.tinyFaceDetector.loadFromUri("/static/models"),
 	faceapi.nets.faceLandmark68Net.loadFromUri("/static/models"),

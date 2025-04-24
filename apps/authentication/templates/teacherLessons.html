@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Lessons | Educator Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --accent-color: #2e59d9;
+            --text-color: #5a5c69;
+            --light-gray: #f8f9fa;
+            --border-radius: 0.35rem;
+        }
+
+        body {
+            background-color: #f8f9fc;
+            color: var(--text-color);
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem 0 rgba(58, 59, 69, 0.2);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            border-bottom: none;
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            padding: 1rem 1.35rem;
+        }
+
+        .session-item {
+            background-color: white;
+            border: 1px solid #e3e6f0;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .session-item:hover {
+            background-color: var(--secondary-color);
+            border-color: #d1d3e2;
+        }
+
+        .btn-success {
+            background-color: #1cc88a;
+            border-color: #1cc88a;
+        }
+
+        .btn-success:hover {
+            background-color: #17a673;
+            border-color: #169b6b;
+        }
+
+        .empty-state {
+            background-color: white;
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            color: #dddfeb;
+            margin-bottom: 1.5rem;
+        }
+
+        .course-badge {
+            background-color: var(--accent-color);
+            font-size: 0.75rem;
+        }
+
+        .session-time {
+            font-size: 0.85rem;
+            color: #858796;
+        }
+
+        .session-description {
+            font-size: 0.9rem;
+            color: #6e707e;
+        }
+
+        .page-header {
+            border-bottom: 1px solid #e3e6f0;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand navbar-light bg-white shadow mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-chalkboard-teacher me-2"></i>FYP Teacher Portal
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span class="d-none d-lg-inline">Teacher Dashboard</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm me-2"></i>Visit Moodle</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm me-2"></i> Logout</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Page Heading -->
+    <div class="page-header">
+        <h1 class="h3 text-gray-800">
+            <i class="fas fa-calendar-day me-2"></i>Today's Lessons
+        </h1>
+        <p class="mb-0">Manage your class sessions and attendance for today</p>
+    </div>
+
+    {% if not courses %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="far fa-calendar-check"></i>
+            </div>
+            <h3>No Lessons Scheduled</h3>
+            <p class="text-muted">You have no classes scheduled for today. Enjoy your day!</p>
+            {#            <a href="#" class="btn btn-primary mt-3">#}
+            {#                <i class="fas fa-calendar-plus me-2"></i>View Weekly Schedule#}
+            {#            </a>#}
+        </div>
+    {% else %}
+        <!-- Courses Grid -->
+        <div class="row">
+            {% for course in courses %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-0 text-white">{{ course.fullname }}</h5>
+                            </div>
+                            <i class="fas fa-book-open text-white-50"></i>
+                        </div>
+                        <div class="card-body">
+                            {% if course.attendance_instances %}
+                                {% for attendance_instance in course.attendance_instances %}
+                                    {% if attendance_instance.today_sessions %}
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-clipboard-list me-2"></i>{{ attendance_instance.name }}
+                                        </h6>
+
+                                        {% for session in attendance_instance.today_sessions %}
+                                            <div class="session-item p-3">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    {% if session.description %}
+                                                        <div style="text-align: left" class="">
+                                                            <span>{{ session.description | safe }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    <form method="post" class="me-3">
+                                                        {% csrf_token %}
+                                                        <a href="/match/compareface/{{ session.id }}/ {{ course.fullname }}/{{ teacherid }}" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-play me-1"></i> Start Attendance
+                                                        </a>
+                                                    </form>
+
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="alert alert-warning mb-0">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            No sessions scheduled for today in this attendance instance.
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No attendance instances configured for this course.
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-white border-top-0 text-end">
+                            {#                            <a href="#" class="btn btn-sm btn-outline-primary">#}
+                            {#                                <i class="fas fa-eye me-1"></i> View Dashboard#}
+                            {#                            </a>#}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>

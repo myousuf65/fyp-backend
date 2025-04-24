@@ -1,179 +1,250 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-    {%load static %}
-    <script defer src="{% static 'face-api.min.js'%}"></script>
-    {%load static%}
-    <script defer src="{% static 'compare.js'%}"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    {% load static %}
+    <script defer src="{% static 'face-api.min.js' %}"></script>
+    {% load static %}
+    <script defer src="{% static 'compare.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #ff7e5f, #feb47b);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
 
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      border-radius: 8px;
-      z-index: 2;
-    }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e9ecef);
+            height: 100vh;
+            width: 100%;
+            background: aliceblue;
+        }
 
-    video {
-      border-radius: 30px;
-      box-shadow: 2px 2px 2px 1px rgb(0 0 0 / 20%);
-      background: #000;
-      position: relative;
-      z-index: 1;
-    }
+        nav {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    .video-container {
-      position: relative;
-      overflow: hidden;
-      border-radius: 30px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
 
-    h1 {
-      color: white;
-      font-size: 40px;
-      margin: 20px;
-    }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            border-radius: 8px;
+            z-index: 2;
+        }
 
-    #attend-button {
-      padding: 10px 20px;
-      background-color: #FF6F00;
-      color: white;
-      border: 2px solid #FF6F00;
-      border-radius: 5px;
-      font-size: 25px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 20px;
-    }
+        video {
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background: #000;
+            position: relative;
+            z-index: 1;
+        }
 
-    #attend-button:hover {
-      background-color: #FF8F00;
-      border-color: #FF8F00;
-    }
+        .video-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            margin-top: 20px;
+        }
+
+        #attend-button {
+            padding: 12px 30px;
+            background-color: #0056D2;
+            color: white;
+            border: 0;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #attend-button:hover {
+            background-color: #003A9B;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
         #main-content {
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+        }
 
+        .error-response-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: rgba(255, 69, 58, 0.9);
+            color: white;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            padding: 20px;
+            text-align: center;
+        }
 
-    .error-response-modal {
-      display: none; /* Hidden by default */
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%); /* Center the modal */
-      width: 400px;
-      background-color: rgba(255, 0, 0, 0.8); /* Semi-transparent red background */
-      color: white; /* White text for better readability */
-      z-index: 1000; /* Ensure it appears above other elements */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
-      font-weight: bold; /* Bold text to grab attention */
-    }
+        .success-response-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: rgba(46, 204, 113, 0.9);
+            color: white;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            padding: 20px;
+            text-align: center;
+        }
 
-    .success-response-modal {
-      display: none; /* Hidden by default */
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%); /* Center the modal */
-      width: 400px;
-      background-color: rgba(0, 128, 0, 0.8); /* Semi-transparent green background */
-      color: white; /* White text for better readability */
-      z-index: 1000; /* Ensure it appears above other elements */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
-      font-weight: bold; /* Bold text to grab attention */
-    }
+        .loader {
+            position: fixed;
+            width: fit-content;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 30px;
+            clip-path: inset(0 3ch 0 0);
+            animation: l4 1s steps(4) infinite;
+            color: #333;
+        }
 
+        .loader:before {
+            content: "Loading...";
+        }
 
-    .loader {
-      position: fixed;
-      width: fit-content;
-      font-weight: bold;
-      font-family: monospace;
-      font-size: 30px;
-      clip-path: inset(0 3ch 0 0);
-      animation: l4 1s steps(4) infinite;
-    }
-    .loader:before {
-      content:"Loading..."
-    }
-    @keyframes l4 {to{clip-path: inset(0 -1ch 0 0)}}
-    #close-modal{
-      padding: 10px;
-      border: 0;
-      border-radius: 10px;
-      cursor : pointer;
-    }
+        @keyframes l4 {
+            to {
+                clip-path: inset(0 -1ch 0 0);
+            }
+        }
 
-  </style>
+        #close-modal {
+            padding: 10px 20px;
+            background-color: #333;
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #close-modal:hover {
+            background-color: #555;
+        }
+
+        .response-modal-text {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+    </style>
 </head>
 
 <body>
+<!-- Navigation bar -->
+<nav class="navbar navbar-expand navbar-light bg-white shadow">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-chalkboard-teacher me-2"></i>FYP Teacher Portal
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span class="d-none d-lg-inline">Teacher Dashboard</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm me-2"></i>Visit Moodle</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm me-2"></i> Logout</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
-  <div id="main-content">
-    <h1>Face Detection in Action</h1>
+
+<!-- Main Content -->
+<div id="main-content">
+
+    <!-- Attendance in progress message -->
+    <h2 style="font-size: 20px; color: #333; margin-top: 10px;">
+        Attendance in progress for <span style="font-weight: bold; color: #0056D2;">{{ course_id }}</span>
+    </h2>
+
     <!-- Video container -->
     <div class="video-container">
-      <video id="video" width="720" height="560" autoplay muted></video>
+        <video id="video" width="720" height="560" autoplay muted></video>
     </div>
-    <button id="attend-button">Take attendance </button>
-
+    <button id="attend-button">Take attendance</button>
 
     <div>
-      <canvas width="720" height="560" id='show-img' style="display: none;">
-      </canvas>
+        <canvas width="720" height="560" id='show-img' style="display: none;">
+        </canvas>
     </div>
-  </div>
+</div>
 
-  <div id="modal"  style="display: none;">
+<!-- Modal -->
+<div id="modal" style="display: none;">
     <div style="color:white; padding: 20px; text-align: center;">
-      <p class="response-modal-text"></p>
-      <button id="close-modal" onclick="closeModal()" style="margin-top: 20px;">Close</button>
+        <p class="response-modal-text"></p>
+        <button id="close-modal" onclick="closeModal()" style="margin-top: 20px;">Close</button>
     </div>
-  </div>
+</div>
 
-
-  {%load static %}
-  <audio id="success-sound" src="{% static 'audio/attendance_marked.mp3' %}"></audio>
-  {%load static %}
-  <audio id="error-sound" src="{% static 'audio/attendance_failed.mp3' %}"></audio>
+{% load static %}
+<audio id="success-sound" src="{% static 'audio/attendance_marked.mp3' %}"></audio>
+{% load static %}
+<audio id="error-sound" src="{% static 'audio/attendance_failed.mp3' %}"></audio>
 </body>
 
 </html>
