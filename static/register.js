@@ -90,10 +90,12 @@ function takephoto() {
 					return response.json()
 				})
 				.then(data => {
-					if (data.photo_path.includes("jpeg")) {
+
+					if(data.moodle_response){
+						studentName.value = ""
+						studentID.value = ""
 						showModal("Student Registered Successfully", 200)
 					}
-
 				})
 				.catch(error => {
 					console.log('Error uploading image:', error);
@@ -103,7 +105,6 @@ function takephoto() {
 		}
 	}, "image/jpeg", 0.95);
 }
-
 
 /*
   django will automatically generate a csrf token and send to client

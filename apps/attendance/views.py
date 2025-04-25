@@ -11,6 +11,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from dotenv import load_dotenv
 
 from apps.authentication.models import StudentModel
+from test import all_statuses
 
 info = b2.InMemoryAccountInfo()
 load_dotenv()
@@ -24,35 +25,7 @@ MOODLE_TOKEN = os.getenv("MOODLE_TOKEN")
 
 
 @ensure_csrf_cookie
-def compareFace(request,sessionid,coursename,teacherid):
-    if request.method == "GET":
-        getSessionInfoUrl = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_get_session&moodlewsrestformat=json"
-        getSessionInfoData:dict = {
-            "sessionid":sessionid
-        }
-        getSessionInfoResponse = requests.post(getSessionInfoUrl,data=getSessionInfoData)
-        print(getSessionInfoResponse.json())
-        status = [
-            {
-                "id":   s["id"],
-                "acronym" : s["acronym"],
-
-            }
-            for s in getSessionInfoResponse.json().get("statuses")
-        ]
-
-        context = {
-            "statuses": status,
-            "attendance_id" : getSessionInfoResponse.json().get("attendance_id"),
-            "course_id" : getSessionInfoResponse.json().get("course_id"),
-            "course_name" : getSessionInfoResponse.json().get("course_name"),
-            "teacherid" : teacherid
-        }
-
-        print(coursename)
-
-        return render(request, "compare_face.html", context)
-
+def compareFace(request):
     if request.method == "POST":
         image_data = request.FILES.get("image")
         if image_data:
@@ -77,16 +50,50 @@ def compareFace(request,sessionid,coursename,teacherid):
                 for face in result:
                     try:
                         matched_full_path = face['identity'][0]
-                        matched_faces.append(matched_full_path.split("/")[-1].replace(".jpeg", ""))
+                        matched_faces.append(matched_full_path.split("/")[-1].replace(".jpeg", "").replace(".png", ""))
                     except KeyError:
                         print("No match for one of the faces")
 
                 if matched_faces:
                     print(f"Matched faces: {matched_faces}")
-                    return JsonResponse({
-                        "message": "True",
-                        "matched_person_names": matched_faces,
-                    })
+                    student  = StudentModel.objects.all().filter(student_id=int(matched_faces[0])).first()
+                    print(student)
+
+                    context = request.session.get("attendance_context", {})
+                    attendance_id = context.get("attendance_id")
+                    course_id = context.get("course_id")
+                    teacherid = context.get("teacherid")
+                    statuses = context.get("stutuses")
+                    sessionid = context.get("sessionid")
+
+                    all_statuses = ",".join(str(status) for status in context.get("statuses"))
+                    present_id = 0
+                    mark_attendance_url = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_update_user_status&moodlewsrestformat=json"
+
+                    for status in context.get("statuses"):
+                        if status['acronym'] == 'P':
+                            present_id = status['id']
+
+                    data = {
+                        "sessionid": context.get("sessionid"),
+                        "studentid": student.moodle_id,
+                        "takenbyid": context.get("teacherid"),
+                        "statusid": present_id,
+                        "statusset": all_statuses
+                    }
+
+
+                    mark_attendance_response = requests.post(mark_attendance_url, data=data)
+                    if mark_attendance_response.json() is None:
+                        return JsonResponse({
+                            "message": "True",
+                            "matched_person_names": matched_faces,
+                        })
+                    else:
+                        print("MOODLE RESPONSE:" , mark_attendance_response)
+                        return JsonResponse({
+                            "error": "Error Marking Attendance for your in Moodle"
+                        })
                 else:
                     print("No matches found")
                     return JsonResponse({
@@ -96,12 +103,43 @@ def compareFace(request,sessionid,coursename,teacherid):
                 return JsonResponse({
                     "error": "No faces detected or no matches found"
                 })
-
         else:
             return JsonResponse({"error": "No image found in the request"}, status=400)
-
     else:
         return JsonResponse({"error": "Invalid HTTP method"}, status=405)
+
+
+
+@ensure_csrf_cookie
+def getCompareFace(request, sessionid, coursename, teacherid):
+    if request.method == "GET":
+        getSessionInfoUrl = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_get_session&moodlewsrestformat=json"
+        getSessionInfoData:dict = {
+            "sessionid":sessionid
+        }
+        getSessionInfoResponse = requests.post(getSessionInfoUrl,data=getSessionInfoData)
+        print(getSessionInfoResponse.json())
+        status = [
+            {
+                "id":   s["id"],
+                "acronym" : s["acronym"],
+
+            }
+            for s in getSessionInfoResponse.json().get("statuses")
+        ]
+
+        context = {
+            "statuses": status,
+            "attendance_id" : getSessionInfoResponse.json().get("attendanceid"),
+            "course_id" : getSessionInfoResponse.json().get("courseid"),
+            "sessionid" : sessionid,
+            "course_name" : coursename,
+            "teacherid" : teacherid
+        }
+
+        request.session['attendance_context'] = context
+        return render(request, "compare_face.html", context)
+    return None
 
 
 @ensure_csrf_cookie
@@ -129,7 +167,7 @@ def registerFace(request):
 
             # Save student record in the database
 
-            moodle_url = MOODLE_URL + "?wstoken" + MOODLE_TOKEN + "&wsfunction=core_user_create_users&moodlewsrestformat=json"
+            moodle_url = MOODLE_URL + "?wstoken=" + MOODLE_TOKEN + "&wsfunction=core_user_create_users&moodlewsrestformat=json"
 
             data = {
                 "users[0][username]": student_name,
