@@ -7,11 +7,12 @@ from deepface import DeepFace
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from dotenv import load_dotenv
 
+from apps.attendance.models import AttendanceModel, CourseModel
 from apps.authentication.models import StudentModel
-from test import all_statuses
 
 info = b2.InMemoryAccountInfo()
 load_dotenv()
@@ -22,6 +23,7 @@ APPLICATION_KEY = os.getenv("B2_APPLICATION_KEY")
 DATASET_DB_PATH = os.getenv("DATASET_DB_PATH")
 MOODLE_URL = os.getenv("MOODLE_URL")
 MOODLE_TOKEN = os.getenv("MOODLE_TOKEN")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 
 @ensure_csrf_cookie
@@ -31,7 +33,7 @@ def compareFace(request):
         if image_data:
             file_path = default_storage.save("static/temp_storage/comparable_photo.jpeg", image_data)
             print("the file path is ", file_path)
-            # all_student = StudentModel.objects.all();
+
             result = DeepFace.find(
                 img_path=file_path,
                 db_path=DATASET_DB_PATH,
@@ -56,43 +58,53 @@ def compareFace(request):
 
                 if matched_faces:
                     print(f"Matched faces: {matched_faces}")
-                    student  = StudentModel.objects.all().filter(student_id=int(matched_faces[0])).first()
-                    print(student)
 
                     context = request.session.get("attendance_context", {})
                     attendance_id = context.get("attendance_id")
                     course_id = context.get("course_id")
                     teacherid = context.get("teacherid")
-                    statuses = context.get("stutuses")
+                    statuses = context.get("statuses")
                     sessionid = context.get("sessionid")
 
-                    all_statuses = ",".join(str(status) for status in context.get("statuses"))
                     present_id = 0
-                    mark_attendance_url = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_update_user_status&moodlewsrestformat=json"
-
-                    for status in context.get("statuses"):
+                    for status in statuses:
                         if status['acronym'] == 'P':
                             present_id = status['id']
 
+                    all_statuses = ",".join(str(status) for status in context.get("statuses"))
+                    mark_attendance_url = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_update_user_status&moodlewsrestformat=json"
+
+                    student = StudentModel.objects.all().filter(student_id=int(matched_faces[0])).first()
+                    print("MARKING ATTENDANCE FOR: ", student)
+
                     data = {
-                        "sessionid": context.get("sessionid"),
+                        "sessionid": sessionid,
                         "studentid": student.moodle_id,
-                        "takenbyid": context.get("teacherid"),
+                        "takenbyid": teacherid,
                         "statusid": present_id,
                         "statusset": all_statuses
                     }
 
-
                     mark_attendance_response = requests.post(mark_attendance_url, data=data)
                     if mark_attendance_response.json() is None:
+
+                        attendance = AttendanceModel(
+                            student_id=student,
+                            course_id=course_id,
+                            session_id=sessionid,
+                            date_of_attendance=timezone.now()
+                        )
+
+                        attendance.save()
+
                         return JsonResponse({
                             "message": "True",
                             "matched_person_names": matched_faces,
                         })
                     else:
-                        print("MOODLE RESPONSE:" , mark_attendance_response)
+                        print("MOODLE RESPONSE:", mark_attendance_response)
                         return JsonResponse({
-                            "error": "Error Marking Attendance for your in Moodle"
+                            "error": "Error while marking attendance for you in Moodle"
                         })
                 else:
                     print("No matches found")
@@ -109,20 +121,19 @@ def compareFace(request):
         return JsonResponse({"error": "Invalid HTTP method"}, status=405)
 
 
-
 @ensure_csrf_cookie
 def getCompareFace(request, sessionid, coursename, teacherid):
     if request.method == "GET":
         getSessionInfoUrl = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_get_session&moodlewsrestformat=json"
-        getSessionInfoData:dict = {
-            "sessionid":sessionid
+        getSessionInfoData: dict = {
+            "sessionid": sessionid
         }
-        getSessionInfoResponse = requests.post(getSessionInfoUrl,data=getSessionInfoData)
+        getSessionInfoResponse = requests.post(getSessionInfoUrl, data=getSessionInfoData)
         print(getSessionInfoResponse.json())
         status = [
             {
-                "id":   s["id"],
-                "acronym" : s["acronym"],
+                "id": s["id"],
+                "acronym": s["acronym"],
 
             }
             for s in getSessionInfoResponse.json().get("statuses")
@@ -130,15 +141,16 @@ def getCompareFace(request, sessionid, coursename, teacherid):
 
         context = {
             "statuses": status,
-            "attendance_id" : getSessionInfoResponse.json().get("attendanceid"),
-            "course_id" : getSessionInfoResponse.json().get("courseid"),
-            "sessionid" : sessionid,
-            "course_name" : coursename,
-            "teacherid" : teacherid
+            "attendance_id": getSessionInfoResponse.json().get("attendanceid"),
+            "course_id": getSessionInfoResponse.json().get("courseid"),
+            "sessionid": sessionid,
+            "course_name": coursename,
+            "teacherid": teacherid,
         }
-
+        print("Frontend", FRONTEND_URL)
         request.session['attendance_context'] = context
         return render(request, "compare_face.html", context)
+
     return None
 
 

@@ -30,7 +30,7 @@ application = ProtocolTypeRouter({
     "websocket": AllowedHostsOriginValidator(
         AuthMiddlewareStack(
             URLRouter([
-                re_path("ws/socket-server/(?P<room_name>\w+)/$", consumers.ChatConsumer.as_asgi()),
+                re_path("ws/socket-server/(?P<session_id>\w+)/$", consumers.ChatConsumer.as_asgi()),
             ])
         )
     ),

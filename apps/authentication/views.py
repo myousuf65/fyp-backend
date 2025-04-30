@@ -10,12 +10,13 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from dotenv import load_dotenv
 from flask import session
 
-from apps.attendance.views import MOODLE_URL
+from apps.attendance.views import MOODLE_URL, FRONTEND_URL
 
 load_dotenv()
 
 MOODLE_URL = os.getenv('MOODLE_URL')
 MOODLE_TOKEN = os.getenv('MOODLE_TOKEN')
+FRONTEND_URL= os.getenv("FRONTEND_URL")
 
 
 
@@ -55,7 +56,8 @@ def teacherLogin(request):
 
                     context = {
                         "courses" : getTeacherSessionResponse.json(),
-                        "teacherid" : id
+                        "teacherid" : id,
+                        "frontend_url" : FRONTEND_URL
                     }
                     return render(request, 'teacherLessons.html', context)
             # User found but not a teacher

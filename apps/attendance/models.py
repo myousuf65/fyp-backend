@@ -13,9 +13,10 @@ class CourseModel(models.Model):
 
 class AttendanceModel(models.Model):
     id = models.AutoField(primary_key=True)
-    student_id = models.ForeignKey("authentication.StudentModel", on_delete=models.DO_NOTHING)  # Correct capitalization
-    course_id = models.ForeignKey("CourseModel", on_delete=models.DO_NOTHING)
-    date_of_attendance = models.DateTimeField(auto_now=True)
+    student_id = models.ForeignKey("authentication.StudentModel", on_delete=models.DO_NOTHING, db_column="student_id")  
+    course_id = models.IntegerField() 
+    session_id = models.IntegerField(default=0, db_column="session_id")
+    date_of_attendance = models.DateTimeField(auto_now=True, db_column="date_of_attendance")
 
     class Meta:
         db_table = "attendance"

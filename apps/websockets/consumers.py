@@ -1,49 +1,66 @@
+import os
+
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from channels.layers import get_channel_layer
 import json
 from uuid import uuid4
 from apps.attendance.models import AttendanceModel, CourseRegistartionModel
+from dotenv import load_dotenv
+import requests
+
+load_dotenv()
+
+MOODLE_URL = os.getenv("MOODLE_URL")
+MOODLE_TOKEN = os.getenv("MOODLE_TOKEN")
+
 
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.username = str(uuid4())  # Unique username per connection
-        self.room = self.scope["url_route"]["kwargs"]["room_name"]  # Room name from URL
+        self.sessionid = self.scope["url_route"]["kwargs"]["session_id"]  # Room name from URL
 
         print("Got connection")
         self.accept()
 
-        # Query the database normally using Django ORM
-        attendance_queryset = AttendanceModel.objects.filter(course_id=1)
-        all_attendance = [
+        getSessionInfoUrl = f"{MOODLE_URL}?wstoken={MOODLE_TOKEN}&wsfunction=mod_attendance_get_session&moodlewsrestformat=json"
+
+        getSessionInfoData:dict = {
+            "sessionid": self.sessionid
+        }
+
+        response = requests.post(getSessionInfoUrl,data=getSessionInfoData)
+        print(response.json())
+
+
+        sessionInfoResponse = response.json()
+        all_students_in_class = sessionInfoResponse['users']
+        attendance_log = sessionInfoResponse['attendance_log']
+        status = [
             {
-                "student_name": attendance.student_id.student_name
+                "id":   s["id"],
+                "acronym" : s["acronym"],
+
             }
-            for attendance in attendance_queryset
+            for s in sessionInfoResponse.get("statuses")
         ]
+        description = sessionInfoResponse['description']
+        courseid = sessionInfoResponse['courseid']
 
-        students_queryset = CourseRegistartionModel.objects.filter(course_id=1)
 
-        all_students = [
-            {
-                "student_name": student.student_id.student_name
-            }
-            for student in students_queryset
-        ]
-
-        print("==========All Students: ===============")
-        print(all_students)
-        print("=======================================")
+        print("==========All Students In Class: ===============")
+        print(all_students_in_class)
+        print("================================================")
 
         print("==========All Attendance: =============")
-        print(all_attendance)
+        print(attendance_log)
         print("=======================================")
 
         # Add the WebSocket to the group
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_add)(
-            self.room,
+            self.sessionid,
             self.channel_name,  # Channel name is unique to each WebSocket connection
         )
 
@@ -53,8 +70,11 @@ class ChatConsumer(WebsocketConsumer):
                 {
                     "message": f"Welcome {self.username}!",
                     "username": self.username,
-                    "attendance": all_attendance,  # Send serialized attendance data
-                    "students": all_students
+                    "attendance": attendance_log,  # Send serialized attendance data
+                    "students": all_students_in_class,
+                    "statuses" : status,
+                    "courseid" : courseid,
+                    "description" : description
                 }
             )
         )
@@ -62,7 +82,7 @@ class ChatConsumer(WebsocketConsumer):
     def receive(self, text_data):
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            self.room,
+            self.sessionid,
             {
                 "type": "chat_message",
                 "message": text_data,
@@ -79,25 +99,21 @@ class ChatConsumer(WebsocketConsumer):
         )
 
     def new_attendance(self, event):
-        data = event['data']
-        print(f"Received new attendance data: {data}")
-
-        students_queryset = CourseRegistartionModel.objects.filter(course_id=1)
-
-        all_students = [
-            {
-                "student_name": student.student_id.student_name
-            }
-            for student in students_queryset
-        ]
-
-        self.send(text_data=json.dumps({
-            "message": f"Welcome {self.username}!",
-            "username": self.username,
-            "attendance": data,
-            "students": all_students
-        }))
+        """Handle updated attendance and broadcast to WebSocket."""
+        self.send(
+            text_data=json.dumps(
+                {
+                    "message": f"Update {self.username}!",
+                    "username": self.username,
+                    "attendance": event["attendance_log"],
+                    "students": event["students"],
+                    "statuses": event["statuses"],
+                    "courseid": event["courseid"],
+                    "description": event["description"],
+                }
+            )
+        )
 
     def disconnect(self, close_code):
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_discard)(self.room, self.channel_name)
+        async_to_sync(channel_layer.group_discard)(self.sessionid, self.channel_name)
