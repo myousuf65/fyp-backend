@@ -1,0 +1,22 @@
+version: "2"
+authtoken: 29JtTtJpTFdIkX11XYU7WREli8E_2LePG61EGUkDvY72fF9Ng 
+
+tunnels:
+  web_app:
+    addr: 3000
+    proto: http
+    subdomain: frontend
+
+  api_server:
+    addr: 8000
+    proto: http
+    subdomain: backend
+
+  ssh:
+    addr: 22
+    proto: tcp
+    remote_addr: 1.tcp.ap.ngrok.io:22544
+
+
+#command for running:
+#ngrok start --all --config ./ngrok.yaml

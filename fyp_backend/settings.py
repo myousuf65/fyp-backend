@@ -22,7 +22,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "test.yousuf.xyz",
-    "touched-intent-monitor.ngrok-free.app",
+    "backend.ap.ngrok.io"
 ]
 
 
@@ -146,9 +146,9 @@ CORS_ALLOW_METHODS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
-    "https://localhost:8000",  # In case you're using HTTPS on localhost
+    "https://localhost:8000",  
     "https://test.yousuf.xyz",
-    "https://touched-intent-monitor.ngrok-free.app",
+    "https://backend.ap.ngrok.io"
 ]
 
 
