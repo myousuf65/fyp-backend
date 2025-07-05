@@ -57,8 +57,6 @@ function takephoto() {
 
 	const formData = new FormData();
 
-
-
 	imgcanvas.toBlob(async(blob) => {
 		if (blob instanceof Blob) {
 			console.log("Blob created");

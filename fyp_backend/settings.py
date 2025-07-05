@@ -22,7 +22,10 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "test.yousuf.xyz",
-    "backend.ap.ngrok.io"
+    "faceback.ap.ngrok.io",
+    "facefront.ap.ngrok.io",
+    "libfront.ap.ngrok.io",
+    "libback.ap.ngrok.io"
 ]
 
 
@@ -146,9 +149,13 @@ CORS_ALLOW_METHODS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
-    "https://localhost:8000",  
+    "https://localhost:8000",
+    "http://localhost:3000",
     "https://test.yousuf.xyz",
-    "https://backend.ap.ngrok.io"
+    "https://faceback.ap.ngrok.io",
+    "https://facefront.ap.ngrok.io",
+    "https://libfront.ap.ngrok.io",
+    "https://libback.ap.ngrok.io"
 ]
 
 

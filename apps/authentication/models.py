@@ -7,6 +7,9 @@ class TeacherModel(models.Model):
     teacher_name = models.CharField(max_length=50)
     photo_path = models.CharField()
     is_deleted = models.BooleanField(default=False)
+    teacher_email = models.CharField(max_length=70,default="")
+    moodle_id = models.CharField(max_length=10, unique=True, default="")
+
 
     class Meta:
         db_table = "teacher"
@@ -18,6 +21,7 @@ class TeacherModel(models.Model):
 class StudentModel(models.Model):
     student_id = models.CharField(max_length=10, unique=True)
     student_name = models.CharField(max_length=50)
+    student_email = models.CharField(max_length=70,default="")
     photo_path = models.CharField()
     is_deleted = models.BooleanField(default=False)
     moodle_id = models.CharField(max_length=10, unique=True, default="")

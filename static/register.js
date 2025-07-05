@@ -2,8 +2,10 @@ const video = document.getElementById('video')
 const imgcanvas = document.getElementById('show-img')
 const videocontainer = document.querySelector('.video-container')
 const attendButton = document.querySelector('#attend-button')
-const studentName = document.getElementById("student-name")
-const studentID = document.getElementById("student-id")
+const user_name = document.getElementById("user_name")
+const user_id = document.getElementById("user_id")
+const user_email = document.getElementById("user_email")
+const user_type = document.getElementById("user_type");
 const errorContainer = document.getElementById("error-message")
 const showModalButton = document.getElementById('show-modal');
 const closeModalButton = document.getElementById('close-modal');
@@ -11,6 +13,7 @@ const modal = document.getElementById('modal');
 const body = document.body;
 const mainContent = document.getElementById("main-content")
 const modaltext = document.querySelector(".response-modal-text")
+
 
 const success_sound = document.getElementById("success-sound");
 const failed_sound = document.getElementById("error-sound");
@@ -48,11 +51,11 @@ function takephoto() {
 
 	/*
 	-------------NOTE TO MYSELF-----------:
-	1. u have to draw the img on a hidden canvas 
+	1. u have to draw the img on a hidden canvas
 	2. then u can use buit in methods to convert canvas to img/blob etc...
 	3. formdata expects and blob
 	4. toBlob is an async function, thus unless
-		the fetch request is in the callback, it will be 
+		the fetch request is in the callback, it will be
 		executed first thus uploading empty image to backend
 	*/
 
@@ -64,8 +67,10 @@ function takephoto() {
 		if (blob instanceof Blob) {
 			console.log("Blob created");
 			formData.append('image', blob, 'photo.jpeg');
-			formData.append("student-id", studentID.value);
-			formData.append("student-name", studentName.value);
+			formData.append("user-id", user_id.value);
+			formData.append("user-name", user_name.value);
+			formData.append("user-email", user_email.value);
+			formData.append("user-type", user_type.value);
 
 			const csrfToken = getCookie('csrftoken');
 			showModal("Loading", 0)
@@ -79,8 +84,8 @@ function takephoto() {
 				.then(response => {
 
 					if (response.status === 400) {
-						showModal("Error : Student already exists", 400)
-						throw new Error('Student exists');
+						showModal("Error : User already exists", 400)
+						throw new Error('User exists');
 					}
 
 					else if (response.status === 500) {
@@ -90,11 +95,10 @@ function takephoto() {
 					return response.json()
 				})
 				.then(data => {
-
-					if(data.moodle_response){
-						studentName.value = ""
-						studentID.value = ""
-						showModal("Student Registered Successfully", 200)
+					if(data.message){
+						user_name.value = ""
+						user_id.value = ""
+						showModal("User Registered Successfully", 200)
 					}
 				})
 				.catch(error => {
